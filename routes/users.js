@@ -12,7 +12,7 @@ router.post('/reg',[
 router.post('/login', userController.login)//{username, password}
 router.post('/byId', authMiddleWare, userController.getUserById)//{id}
 router.post('/byName', authMiddleWare, userController.getUserByName)//{username}
-router.get('/allUsers', authMiddleWare, userController.getAllUsers)//*
+router.get('/allUsers', userController.getAllUsers)//*
 router.delete('/delete', authMiddleWare, userController.deleteUser)//{id}
 router.patch('/update', authMiddleWare, userController.updateUser)//{user_id,username, address, telephone, email}
 

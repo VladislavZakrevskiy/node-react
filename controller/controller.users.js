@@ -25,19 +25,21 @@ class usersController {//y
                 return;
             }
             const {username, password, address, telephone, date_birth, email} = req.body
-            const candidate = db.query('select * from users where user_name = $1', [username])
-            if(!candidate){
+            const candidate =await db.query('select * from users where user_name = $1', [username])
+            
+            if(  !candidate.rows[0]){
                 const hashPassword = bcrypt.hashSync(password, 7)
                 const id = v4()
                 const user = await db.query(
                     'insert into users (user_id, user_name, password, address, telephone, date_birth, email) values ($1,$2,$3,$4,$5,$6,$7) RETURNING *',
                     [id,username, hashPassword, address, telephone, date_birth, email])
-                res.json( user.rows[0])
+                    res.json( user.rows[0])
             }
-            else res.json('Такой пользователь есть')
+            else res.status(403).json('Такой пользователь есть ')
+            
         } catch (error) {
             console.log(error)
-            res.json("Server Error")
+            res.status(401).json("Server Error")
         }
     }
 
@@ -47,7 +49,7 @@ class usersController {//y
             const user = await db.query('select * from users where user_name = $1',
             [username])
             if(!user){
-                return res.json(`Пользователь ${username} не найден`)
+                return res.status(403).json(`Пользователь ${username} не найден`)
             }
            
             const validPassword = bcrypt.compareSync(password,  user.rows[0].password)
@@ -55,11 +57,11 @@ class usersController {//y
                 return res.status(400).json({message: `Неверный пароль `}) 
             }
             const accessToken = await generateAccessToken(user.rows[0].user_id)
-            res.json(accessToken)
+            res.json( accessToken)
             return;
         } catch (error) {
             console.log(error)
-            res.json(error)
+            res.status(401).json(error)
         }
         
     }
@@ -71,7 +73,7 @@ class usersController {//y
             res.json(user.rows[0])
         } catch (error) {
             console.log(error)
-            res.json(error)
+            res.status(403).json(error)
         }   
     }
 
@@ -82,7 +84,7 @@ class usersController {//y
             res.json(user.rows[0])
         } catch (error) {
             console.log(error)
-            res.json(error)
+            res.status(403).json(error)
         }
     }
 
@@ -93,25 +95,26 @@ class usersController {//y
 
     async deleteUser(req, res) {
         try {
-            const {id} = req.body
-            const user = db.query('delete from users where user_id = $1', [id])
+            const {username} = req.body
+            const user = db.query('delete from users where user_name = $1', [username])
             res.json(user)
         } catch (error) {
             console.log(error)
-            res.json(error)
+            res.status(403).json(error)
         }
     }
 
     async updateUser(req, res) {
         try {
             
-            const {user_id,username, address, telephone, email} = req.body
-            const user = await db.query('update users set user_name = $1, address = $2, telephone = $3, email = $4 where user_id= $5',
-            [username, address, telephone, email,user_id])
+            const {old_username,new_username , address, telephone, email} = req.body
+            const user = await db.query('update users set user_name = $1, address = $2, telephone = $3, email = $4 where user_name= $5',
+            [new_username, address, telephone, email,old_username])
+            res.json(user.rows[0])
 
         } catch (error) {
             console.log(error)
-            res.json(error)
+            res.status(403).json(error)
         }
     }
 }

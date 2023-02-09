@@ -4,12 +4,12 @@ const {v4} =require('uuid')
 class postsController {
     async createPost(req,res){//y
         try {
-            const {title, body, user_id, date_made} = req.body
+            const {title, body, username, date_made} = req.body
             const post_id = v4()
-            const user = await db.query('select * from users where user_id = $1', [user_id])
+            const user = await db.query('select * from users where user_name = $1', [username])
             if(user){
                 const post = await db.query('insert into posts (post_id, user_id, title, body, date_made) values ($1,$2,$3,$4,$5) returning *',
-                [post_id, user_id, title, body, date_made])
+                [post_id, user.rows[0].user_id, title, body, date_made])
                 res.json(post.rows[0])
                 return
             }
@@ -45,14 +45,15 @@ class postsController {
         }
     }
 
-    async getPostsByUser(req,res){//y
+    async getPostsByUser(req,response){//y
         try {
-            const {user_id} = req.body
-            const posts = await db.query('select * from posts where user_id = $1', [user_id])
-            res.json(posts.rows)
+            const {username,limit, page} = req.body
+            const posts = await db.query('select * from posts left join users on users.user_id = posts.user_id where user_name = $1' ,[username])
+            response.json(posts.rows)
+            console.log([limit,page, username])
         } catch (error) {
             console.log(error)
-            res.json(error)
+            response.status(403).json(error)
         }
     }
 
