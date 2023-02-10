@@ -48,10 +48,30 @@ class postsController {
     async getPostsByUser(req,response){//y
         try {
             const {username,limit, page} = req.body
+            console.log([username,limit,page])
+            
+            
             const posts = await db.query('select * from posts left join users on users.user_id = posts.user_id where user_name = $1' ,[username])
-            response.json(posts.rows)
-            console.log([limit,page, username])
-        } catch (error) {
+            let allPosts = await posts.rows
+            let countPages = Math.ceil(allPosts.length/limit)
+            let postList = [] 
+            for(let i=0;i<countPages;i++){
+                let arr = []
+                for(let j=0;j<limit;j++){
+                    arr.push(allPosts[0])
+                    allPosts.splice(0,1)
+                    }
+                postList.push(arr)
+                }
+                if(limit == -1){
+                    response.json( posts.rows)
+                }
+                if(page>postList.length){
+                    return false
+                }
+                else response.json({arr: postList[page-1], leng: posts.rowCount}) 
+            }
+            catch (error) {
             console.log(error)
             response.status(403).json(error)
         }

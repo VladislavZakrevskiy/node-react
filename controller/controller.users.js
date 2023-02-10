@@ -39,7 +39,7 @@ class usersController {//y
             
         } catch (error) {
             console.log(error)
-            res.status(401).json("Server Error")
+            res.status(401).json("Заполните все поля")
         }
     }
 
@@ -48,16 +48,17 @@ class usersController {//y
             const {username, password} = req.body
             const user = await db.query('select * from users where user_name = $1',
             [username])
-            if(!user){
-                return res.status(403).json(`Пользователь ${username} не найден`)
+            if(!user.rows[0]){
+                
+                res.status(403).json(`Пользователь ${username} не найден`)
+                return
             }
-           
             const validPassword = bcrypt.compareSync(password,  user.rows[0].password)
             if(!validPassword){
-                return res.status(400).json({message: `Неверный пароль `}) 
+                return res.status(400).json( `Неверный пароль`) 
             }
             const accessToken = await generateAccessToken(user.rows[0].user_id)
-            res.json( accessToken)
+            res.json({token: accessToken, username:user.rows[0].user_name})
             return;
         } catch (error) {
             console.log(error)
