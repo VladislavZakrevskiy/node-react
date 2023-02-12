@@ -4,8 +4,10 @@ const {v4} =require('uuid')
 class postsController {
     async createPost(req,res){//y
         try {
-            const {title, body, username, date_made} = req.body
-            const post_id = v4()
+            const {post_id,title, body, username, date_made} = req.body
+            if(!post_id){
+                post_id = v4()
+            }
             const user = await db.query('select * from users where user_name = $1', [username])
             if(user){
                 const post = await db.query('insert into posts (post_id, user_id, title, body, date_made) values ($1,$2,$3,$4,$5) returning *',

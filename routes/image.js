@@ -8,7 +8,7 @@ const imageUpload = multer({
     dest: 'images',
   }); 
 
-router.post('/:id',imageUpload.single('image'), imageController.uploadImg)
+router.post('/',imageUpload.single('image'), imageController.uploadImg)
 router.put('/', imageController.loadImg)
 
 
