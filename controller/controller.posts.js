@@ -36,8 +36,8 @@ class postsController {
 
     async getPost(req,res){//y
         try {
-            const {post_id} = req.body
-            const post = await db.query('select * from posts where post_id = $1', [post_id])
+            const {id} = req.params
+            const post = await db.query('select * from posts where post_id = $1', [id])
             res.json(post.rows[0])
         } catch (error) {
             console.log(error)
@@ -54,6 +54,15 @@ class postsController {
             const posts = await db.query('select * from posts left join users on users.user_id = posts.user_id where user_name = $1' ,[username])
             let allPosts = await posts.rows
             let countPages = Math.ceil(allPosts.length/limit)
+            if(limit < 0 ){
+                response.json({arr:posts.rows})
+                return
+            }
+            if(page>countPages){
+                response.status(200).json()
+                return
+                 
+            }
             let postList = [] 
             for(let i=0;i<countPages;i++){
                 let arr = []
@@ -63,13 +72,8 @@ class postsController {
                     }
                 postList.push(arr)
                 }
-                if(limit == -1){
-                    response.json( posts.rows)
-                }
-                if(page>postList.length){
-                    return false
-                }
-                else response.json({arr: postList[page-1], leng: posts.rowCount}) 
+                let ans = postList[page-1].filter(el => typeof(el) == 'object')
+                response.json({arr: ans, leng: posts.rowCount}) 
             }
             catch (error) {
             console.log(error)

@@ -3,8 +3,8 @@ const db = require('../db')
 
 class commentsController {//y
     async getAllComments(req,res) {
-        const {post_id} = req.body
-        const comments = await db.query('select * from comments where post_id = $1', [post_id])
+        const {id} = req.params
+        const comments = await db.query('select * from comments where post_id = $1', [id])
         res.json(comments.rows)
     }
 
@@ -12,7 +12,7 @@ class commentsController {//y
         try {
             const {post_id, email, name, body} = req.body
             const comments_id = v4()
-            const comment = await db.query('insert into comments (comments_id, post_id, email, name, body) values ($1,$2,$3,$4,$5)',
+            const comment = await db.query('insert into comments (comments_id, post_id, email, name, body) values ($1,$2,$3,$4,$5) returning *',
             [comments_id,post_id, email, name, body])
             res.json(comment.rows[0])
 

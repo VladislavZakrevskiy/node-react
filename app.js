@@ -6,6 +6,7 @@ const morgan = require('morgan')
 const commentsRoutes = require('./routes/comments')
 const usersRoutes = require('./routes/users')
 const postsRoutes = require('./routes/posts')
+const imageRoutes = require('./routes/image')
 
 
 
@@ -17,6 +18,7 @@ app.use(express.json())
 app.use('/api/comments', commentsRoutes)
 app.use('/api/users',usersRoutes)
 app.use('/api/posts',postsRoutes)
+app.use('/api/images', imageRoutes)
 
 
 
