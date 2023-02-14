@@ -109,6 +109,7 @@ class usersController {//y
         try {
             
             const {old_username,new_username , address, telephone, email} = req.body
+            console.log([old_username,new_username , address, telephone, email])
             const user = await db.query('update users set user_name = $1, address = $2, telephone = $3, email = $4 where user_name= $5',
             [new_username, address, telephone, email,old_username])
             res.json(user.rows[0])

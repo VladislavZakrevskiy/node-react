@@ -8,5 +8,8 @@ router.post('/delete', authMiddleWare, postsController.deletePost)//{post_id}
 router.get('/:id', authMiddleWare, postsController.getPost)//*
 router.post('/getByUser',authMiddleWare, postsController.getPostsByUser)//{user_id}
 router.patch('/update', authMiddleWare, postsController.updatePost)//{title, body, post_id}
+router.patch('/setLike', postsController.appendLike)
+router.patch('/deleteLike', postsController.deleteLike)
+router.get('/countLikes/:id', postsController.getCountLikes)
 
 module.exports = router

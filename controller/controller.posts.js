@@ -10,8 +10,8 @@ class postsController {
             }
             const user = await db.query('select * from users where user_name = $1', [username])
             if(user){
-                const post = await db.query('insert into posts (post_id, user_id, title, body, date_made) values ($1,$2,$3,$4,$5) returning *',
-                [post_id, user.rows[0].user_id, title, body, date_made])
+                const post = await db.query('insert into posts (post_id, user_id, title, body, date_made) values ($1,$2,$3,$4,now()) returning *',
+                [post_id, user.rows[0].user_id, title, body])
                 res.json(post.rows[0])
                 return
             }
@@ -53,7 +53,7 @@ class postsController {
             console.log([username,limit,page])
             
             
-            const posts = await db.query('select * from posts left join users on users.user_id = posts.user_id where user_name = $1' ,[username])
+            const posts = await db.query('select post_id, users.user_id, title, body, date_made, array_length(likes, 1) from posts left join users on users.user_id = posts.user_id where user_name = $1 order by date_made asc' ,[username])
             let allPosts = await posts.rows
             let countPages = Math.ceil(allPosts.length/limit)
             if(limit < 0 ){
@@ -86,6 +86,7 @@ class postsController {
     async updatePost(req,res) {//y
         try {
             const {title, body, post_id} = req.body
+            console.log(post_id)
             const post = await db.query('update posts set title = $1, body = $2 where post_id = $3',
             [title, body, post_id])
             res.json(post.rows)
@@ -93,6 +94,34 @@ class postsController {
             console.log(error)
             res.json(error)
         }
+    }
+
+    async deleteLike(req,res){
+        const {post_id,username} = req.body
+        db.query('update posts set likes = array_remove(likes, (select user_id from users where user_name = $1)) where post_id = $2', [username, post_id]).then(()=>res.json('successful')).catch(e=>res.json(e))
+    }
+    
+    async appendLike(req,res){
+        const {post_id,username} = req.body
+        db.query('update posts set likes = array_append(likes, (select user_id from users where user_name = $1)) where post_id = $2', [username, post_id]).then(()=>res.json('successful')).catch(e=>{
+            res.json(e)
+        })
+    }
+
+    async getCountLikes(req,res){
+        const {id} = req.params
+        db
+        .query('select array_length(likes,1) from posts where post_id = $1', [id])
+        .then(data=>{
+            if(data.rows[0].array_length==null){
+                res.json(0)
+            }
+            else res.json(data.rows[0].array_length)
+        })
+        .catch(e=>{
+            console.log(e) 
+            res.json(e)
+        })
     }
 
 }
